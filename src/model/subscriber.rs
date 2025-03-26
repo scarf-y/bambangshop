@@ -15,7 +15,7 @@ pub struct Subscriber {
 impl Subscriber {
     #[tokio::main]
     pub async fn update(&self, payload: Notification) {
-        REQUEST_CLIENT
+        REQWEST_CLIENT
             .post(&self.url)
             .header("Content-Type", "JSON")
             .body(to_string(&payload).unwrap())
