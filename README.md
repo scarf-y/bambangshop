@@ -78,6 +78,38 @@ This is the place for you to write reflections:
 
 #### Reflection Publisher-1
 
+### **Reflection Publisher-1**  
+
+#### **1. Apakah Kita Perlu Trait untuk Subscriber?**  
+Dalam **Observer Pattern**, `Subscriber` biasanya didefinisikan sebagai sebuah **interface** (atau trait dalam Rust) agar memungkinkan berbagai jenis subscriber dengan perilaku berbeda. Namun, dalam BambangShop, setiap subscriber hanya memiliki **dua atribut utama: `url` dan `name`**, dan tidak ada variasi perilaku antara satu subscriber dengan yang lain.  
+
+Karena itu, **penggunaan satu model struct sudah cukup** untuk menangani semua subscriber. Jika di masa depan sistem berkembang dan membutuhkan berbagai jenis subscriber dengan perilaku berbeda (misalnya, subscriber yang menggunakan WebSocket atau memiliki format notifikasi berbeda), barulah kita perlu mempertimbangkan penggunaan trait agar lebih fleksibel.  
+
+---
+
+#### **2. Mengapa Menggunakan DashMap, Bukan Vec?**  
+Dalam implementasi daftar subscriber, kita perlu menyimpan dan mengakses subscriber berdasarkan **URL** sebagai identifier unik. Jika kita menggunakan `Vec<Subscriber>`, maka setiap operasi pencarian, penambahan, atau penghapusan harus dilakukan dengan **iterasi manual** (`O(n)` complexity), yang tidak efisien jika jumlah subscriber bertambah banyak.  
+
+Sebaliknya, **DashMap** menggunakan struktur **hash-based key-value storage**, yang memungkinkan **akses langsung ke subscriber berdasarkan URL dalam waktu O(1)**. Selain itu, DashMap **mencegah duplikasi**, sehingga tidak perlu memeriksa secara manual apakah URL sudah ada sebelum menambah subscriber baru.  
+
+---
+
+#### **3. Apakah Singleton Pattern Sudah Cukup, atau Masih Perlu DashMap?**  
+Meskipun kita dapat menggunakan **Singleton Pattern** dengan `Mutex<HashMap<..>>` atau `RwLock<HashMap<..>>`, pendekatan ini memiliki keterbatasan dalam lingkungan **multi-threaded**:  
+- **`Mutex<HashMap<..>>`**: Mengunci seluruh `HashMap` saat ada satu thread yang menulis, membuat thread lain harus menunggu giliran.  
+- **`RwLock<HashMap<..>>`**: Memungkinkan beberapa thread membaca secara bersamaan, tetapi tetap membatasi hanya satu thread yang bisa menulis pada satu waktu.  
+
+Pendekatan ini bisa menyebabkan **bottleneck**, terutama jika banyak subscriber yang bertambah atau dihapus dalam waktu bersamaan.  
+
+Sebagai alternatif, DashMap lebih optimal karena menggunakan teknik "sharding". Sharding dalam DashMap berarti bahwa data dipecah menjadi beberapa bagian (shards), dan setiap shard memiliki lock sendiri. Dengan cara ini:  
+- **Beberapa thread dapat membaca dan menulis ke bagian (shard) yang berbeda tanpa saling mengganggu.**  
+- **Tidak ada satu titik tunggal (global lock) yang menghambat seluruh operasi**, seperti yang terjadi pada `Mutex<HashMap<..>>`.  
+- **Operasi parallel menjadi lebih efisien**, terutama untuk aplikasi yang memproses banyak subscriber dalam waktu bersamaan.  
+
+Dengan kata lain, DashMap menghilangkan kelemahan utama dari pendekatan Singleton biasa, menjadikannya pilihan yang lebih efisien untuk mengelola daftar subscriber yang perlu diakses oleh banyak thread secara bersamaan.  
+
+--- 
+
 #### Reflection Publisher-2
 
 #### Reflection Publisher-3
