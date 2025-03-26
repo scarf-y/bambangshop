@@ -78,23 +78,21 @@ This is the place for you to write reflections:
 
 #### Reflection Publisher-1
 
-### **Reflection Publisher-1**  
-
-#### **1. Apakah Kita Perlu Trait untuk Subscriber?**  
+#### **1. In the Observer pattern diagram explained by the Head First Design Pattern book, Subscriber is defined as an interface. Explain based on your understanding of Observer design patterns, do we still need an interface (or trait in Rust) in this BambangShop case, or a single Model struct is enough?**  
 Dalam **Observer Pattern**, `Subscriber` biasanya didefinisikan sebagai sebuah **interface** (atau trait dalam Rust) agar memungkinkan berbagai jenis subscriber dengan perilaku berbeda. Namun, dalam BambangShop, setiap subscriber hanya memiliki **dua atribut utama: `url` dan `name`**, dan tidak ada variasi perilaku antara satu subscriber dengan yang lain.  
 
 Karena itu, **penggunaan satu model struct sudah cukup** untuk menangani semua subscriber. Jika di masa depan sistem berkembang dan membutuhkan berbagai jenis subscriber dengan perilaku berbeda (misalnya, subscriber yang menggunakan WebSocket atau memiliki format notifikasi berbeda), barulah kita perlu mempertimbangkan penggunaan trait agar lebih fleksibel.  
 
 ---
 
-#### **2. Mengapa Menggunakan DashMap, Bukan Vec?**  
+#### **2. id in Program and url in Subscriber is intended to be unique. Explain based on your understanding, is using Vec (list) sufficient or using DashMap (map/dictionary) like we currently use is necessary for this case?**  
 Dalam implementasi daftar subscriber, kita perlu menyimpan dan mengakses subscriber berdasarkan **URL** sebagai identifier unik. Jika kita menggunakan `Vec<Subscriber>`, maka setiap operasi pencarian, penambahan, atau penghapusan harus dilakukan dengan **iterasi manual** (`O(n)` complexity), yang tidak efisien jika jumlah subscriber bertambah banyak.  
 
 Sebaliknya, **DashMap** menggunakan struktur **hash-based key-value storage**, yang memungkinkan **akses langsung ke subscriber berdasarkan URL dalam waktu O(1)**. Selain itu, DashMap **mencegah duplikasi**, sehingga tidak perlu memeriksa secara manual apakah URL sudah ada sebelum menambah subscriber baru.  
 
 ---
 
-#### **3. Apakah Singleton Pattern Sudah Cukup, atau Masih Perlu DashMap?**  
+#### **3. When programming using Rust, we are enforced by rigorous compiler constraints to make a thread-safe program. In the case of the List of Subscribers (SUBSCRIBERS) static variable, we used the DashMap external library for thread safe HashMap. Explain based on your understanding of design patterns, do we still need DashMap or we can implement Singleton pattern instead?**  
 Meskipun kita dapat menggunakan **Singleton Pattern** dengan `Mutex<HashMap<..>>` atau `RwLock<HashMap<..>>`, pendekatan ini memiliki keterbatasan dalam lingkungan **multi-threaded**:  
 - **`Mutex<HashMap<..>>`**: Mengunci seluruh `HashMap` saat ada satu thread yang menulis, membuat thread lain harus menunggu giliran.  
 - **`RwLock<HashMap<..>>`**: Memungkinkan beberapa thread membaca secara bersamaan, tetapi tetap membatasi hanya satu thread yang bisa menulis pada satu waktu.  
@@ -111,5 +109,39 @@ Dengan kata lain, DashMap menghilangkan kelemahan utama dari pendekatan Singleto
 --- 
 
 #### Reflection Publisher-2
+
+#### **1. In the Model-View Controller (MVC) compound pattern, there is no “Service” and “Repository”. Model in MVC covers both data storage and business logic. Explain based on your understanding of design principles, why we need to separate “Service” and “Repository” from a Model?**  
+Dalam konsep **Model-View-Controller (MVC)**, model bertanggung jawab atas penyimpanan data dan logika bisnis. Namun, pendekatan ini bisa menyebabkan monolitik dan sulit dikelola seiring bertambahnya kompleksitas sistem.  
+
+Dengan memisahkan **Service** dan **Repository**, kita mendapatkan:  
+- **Repository**: Berfungsi sebagai lapisan akses data, menangani **query dan operasi database**.  
+- **Service**: Mengelola **logika bisnis**, validasi, dan interaksi antara model tanpa terikat langsung ke database.  
+
+Pendekatan ini membuat kode lebih modular, mudah diuji, dan scalable, karena logika bisnis tidak bercampur dengan kode akses data.  
+
+---
+
+#### **2. What happens if we only use the Model? Explain your imagination on how the interactions between each model (Program, Subscriber, Notification) affect the code complexity for each model?**  
+Jika kita hanya menggunakan Model tanpa Service dan Repository, setiap model akan menangani akses data dan logika bisnis sekaligus, menyebabkan beberapa masalah:  
+- **Ketergantungan antar Model meningkat**, misalnya `Notification` harus mengetahui detail `Subscriber` dan `Product`, sehingga perubahan kecil dalam satu model bisa berdampak besar pada model lainnya.  
+- **Duplikasi kode**, karena logika bisnis akan tersebar di berbagai model, membuat perawatan kode lebih sulit.  
+- **Kesulitan dalam pengujian**, karena unit test harus selalu berinteraksi dengan database, bukan hanya menguji logika bisnis secara independen.  
+
+Memisahkan Service dan Repository mengurangi **coupling**, membuat kode lebih bersih, dan lebih fleksibel untuk dikembangkan.  
+
+---
+
+#### **3. Have you explored more about Postman? Tell us how this tool helps you to test your current work. You might want to also list which features in Postman you are interested in or feel like it is helpful to help your Group Project or any of your future software engineering projects**  
+Postman sangat membantu dalam menguji API tanpa perlu membuat frontend atau menggunakan command line. Dalam implementasi ini, Postman mempermudah:  
+- **Mengirim request HTTP (POST, GET, DELETE, dll.)** untuk menguji `subscribe` dan `unsubscribe` pada `NotificationService`.  
+- **Melihat response JSON secara langsung**, termasuk error handling.  
+- **Menyimpan dan mengorganisasi request API**, berguna untuk dokumentasi dan pengujian di masa depan.  
+
+Fitur menarik yang menurut saya akan berguna untuk proyek selanjutnya ada, **Automated testing**,
+**Environment variables**, **Collection runner**: 
+
+Dengan Postman, pengujian API menjadi lebih efisien, terstruktur, dan mudah diulang, mendukung pengembangan berbasis TDD dan CI/CD.  
+
+---
 
 #### Reflection Publisher-3
