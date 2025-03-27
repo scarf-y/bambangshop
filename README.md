@@ -144,4 +144,33 @@ Dengan Postman, pengujian API menjadi lebih efisien, terstruktur, dan mudah diul
 
 ---
 
-#### Reflection Publisher-3
+#### Reflection Publisher-3 
+
+#### **1. Observer Pattern has two variations: Push model (publisher pushes data to subscribers) and Pull model (subscribers pull data from publisher). In this tutorial case, which variation of Observer Pattern that we use?**  
+Kita menggunakan **Push Model**, di mana **publisher (sistem)** secara langsung mengirimkan **notifikasi** ke **subscribers** saat terjadi perubahan pada produk. Setiap kali produk dibuat, dipromosikan, atau dihapus, notifikasi langsung dikirim melalui HTTP POST ke URL subscriber.  
+
+#### **2. What are the advantages and disadvantages of using the other variation of Observer Pattern for this tutorial case? (example: if you answer Q1 with Push, then imagine if we used Pull)**  
+Jika kita menggunakan **Pull Model**, subscriber harus secara berkala **memeriksa (polling)** apakah ada pembaruan pada produk.  
+
+**Keuntungan Pull Model:**  
+- Subscriber memiliki **kontrol penuh** kapan harus mengambil data.  
+- Menghindari **overhead komunikasi** jika subscriber tidak selalu membutuhkan pembaruan.  
+
+**Kekurangan Pull Model:**  
+- **Tidak real-time**, karena subscriber harus melakukan polling secara berkala.  
+- **Beban server meningkat** jika banyak subscriber melakukan polling berulang.  
+- **Inefisiensi jaringan**, karena polling tetap dilakukan meskipun tidak ada perubahan data.  
+
+Dalam kasus ini, **Push Model lebih efektif** karena perubahan produk langsung dikirimkan ke subscriber tanpa perlu polling.  
+
+#### **3. Explain what will happen to the program if we decide to not use multi-threading in the notification process.**  
+Tanpa **multi-threading**, notifikasi ke subscriber akan dikirim **secara berurutan (synchronous execution)**.  
+
+**Dampaknya:**  
+- **Latensi meningkat**, karena satu subscriber harus menunggu yang lain selesai menerima notifikasi sebelum lanjut ke berikutnya.  
+- **Bottleneck dalam sistem**, terutama jika ada banyak subscriber atau server mereka lambat merespons.  
+- **Kurang scalable**, karena satu request bisa memblokir keseluruhan proses notifikasi.  
+
+Dengan **multi-threading**, setiap notifikasi dikirim dalam thread terpisah, memungkinkan pengiriman paralel yang lebih cepat dan responsif.  
+
+---
